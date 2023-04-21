@@ -1,5 +1,5 @@
 
-/*created by prashant shukla */
+/*created by Mihir Rokde */
 
 var paddle2 =10,paddle1=10;
 
@@ -21,16 +21,47 @@ var ball = {
     dy:3
 }
 
+rightwristx=0;
+rightwristy=0;
+scorerightwrist=0;
+game_status="";
+
+function preload(){
+  ball_touch_paddel=loadSound("ball_touch_paddel.wav");
+  missed=loadSound("missed.wav")
+}
+
 function setup(){
   var canvas =  createCanvas(700,600);
   canvas.parent('canvas');
+  video=createCapture(VIDEO);
+  video.size(700,600);
+  video.hide();
+  poseNet=ml5.poseNet(video,modalloaded);
+  poseNet.on('pose',gotPoses);
+}
+function modalloaded(){
+  console.log("posenetIntialized")
+}
+function gotPoses(results){
+if(results.length>0){
+  rightwristy=results[0].pose.rightWrist.y;
+  rightwristx=results[0].pose.rightWrist.x;
+  scorerightwrist=results[0].pose.keypoints[10].score;
+  console.log(scorerightwrist);
+}
+}
+function startGame(){
+  game_status="start";
+  document.getElementById("status").innerHTML="gameisloaded";
 }
 
 
+
 function draw(){
-
- background(0); 
-
+if(game_status=="start")
+{ background(0); 
+image(video,0,0,700,600);
  fill("black");
  stroke("black");
  rect(680,0,20,700);
@@ -38,7 +69,11 @@ function draw(){
  fill("black");
  stroke("black");
  rect(0,0,20,700);
- 
+ if(scorerightwrist>0.2){
+fill("red");
+stroke("red");
+circle(rightwristx,rightwristy,30);
+ }
    //funtion paddleInCanvas call 
    paddleInCanvas();
  
@@ -66,6 +101,7 @@ function draw(){
    
    //function move call which in very important
     move();
+  }
 }
 
 
@@ -163,4 +199,9 @@ function paddleInCanvas(){
   if(mouseY < 0){
     mouseY =0;
   }  
+}
+function restart(){
+  loop();
+  pcscore=0;
+  playerscore=0;
 }
